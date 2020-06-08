@@ -8,6 +8,17 @@
   align-items: center;
 }
 
+.weather-card {
+  width: 20%;
+  border: 1px solid black;
+  padding: 10px;
+  margin-bottom: 5vh;
+}
+
+.weather-card span {
+  float: right;
+}
+
 .form {
   width: 30%;
   display: flex;
