@@ -8,6 +8,11 @@
   align-items: center;
 }
 
+.error {
+  color: red;
+  margin-bottom: 5vh;
+}
+
 .weather-card {
   width: 20%;
   border: 1px solid black;

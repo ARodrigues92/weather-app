@@ -32,8 +32,16 @@ SearchForm.propTypes = {
 };
 
 function WeatherReport(props) {
-  const { weatherData } = props;
+  const { weatherData, errorMsg } = props;
   const { location, sky, temperature, humidity, pressure } = weatherData;
+
+  if (errorMsg) {
+    return (
+      <div className="error">
+        <p>{errorMsg}</p>
+      </div>
+    );
+  }
 
   // Prevent printing the card if no data has been provided yet
   if (Object.keys(weatherData).length === 0) {
@@ -70,23 +78,33 @@ WeatherReport.propTypes = {
     humidity: PropTypes.number,
     pressure: PropTypes.number,
   }).isRequired,
+  errorMsg: PropTypes.string.isRequired,
 };
 
 function WeatherApp() {
   const [location, setLocation] = useState('');
   const [weatherData, setWeatherData] = useState({});
+  const [errorMsg, setErrorMsg] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
     const response = await getCurrentWeather(location);
-    const data = await response.json();
-    setWeatherData({
-      location: data.name,
-      sky: data.weather[0].description,
-      temperature: data.main.temp,
-      humidity: data.main.humidity,
-      pressure: data.main.pressure,
-    });
+    if (!response.ok) {
+      if (response.status === 404) {
+        setErrorMsg('The provided location could not be found');
+      } else {
+        setErrorMsg('Ups, something went wrong');
+      }
+    } else {
+      const data = await response.json();
+      setWeatherData({
+        location: data.name,
+        sky: data.weather[0].description,
+        temperature: data.main.temp,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+      });
+    }
   }
 
   function handleValueChange(event) {
@@ -96,7 +114,7 @@ function WeatherApp() {
 
   return (
     <div className="weather-app">
-      <WeatherReport weatherData={weatherData} />
+      <WeatherReport weatherData={weatherData} errorMsg={errorMsg} />
       <SearchForm
         location={location}
         handleSubmit={handleSubmit}
