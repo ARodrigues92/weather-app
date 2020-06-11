@@ -6,33 +6,60 @@ import './styles/reset.css';
 import './styles/index.css';
 
 function SearchForm(props) {
-  const { location, handleSubmit, handleValueChange } = props;
+  const { location, units, handleSubmit, handleValueChange } = props;
   return (
     <form className="form" onSubmit={handleSubmit}>
-      <label className="label" htmlFor="location">
-        City:
-        <input
-          className="input"
-          id="location"
-          name="location"
-          type="text"
-          value={location}
-          onChange={handleValueChange}
-          required
-        />
-      </label>
+      <div className="input-group">
+        <label className="label" htmlFor="location">
+          City:
+          <input
+            className="location-input"
+            id="location"
+            name="location"
+            type="text"
+            value={location}
+            onChange={handleValueChange}
+            required
+          />
+        </label>
+        <div className="temperature-input">
+          <label className="label" htmlFor="metric">
+            <input
+              className="temp-radio"
+              type="radio"
+              name="metric"
+              value="metric"
+              onChange={handleValueChange}
+              checked={units === 'metric'}
+            />
+            ºC
+          </label>
+          <label className="label" htmlFor="imperial">
+            <input
+              className="temp-radio"
+              type="radio"
+              name="imperial"
+              value="imperial"
+              onChange={handleValueChange}
+              checked={units === 'imperial'}
+            />
+            ºF
+          </label>
+        </div>
+      </div>
       <input className="submit" type="submit" value="Search" />
     </form>
   );
 }
 SearchForm.propTypes = {
   location: PropTypes.string.isRequired,
+  units: PropTypes.string.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   handleValueChange: PropTypes.func.isRequired,
 };
 
 function WeatherReport(props) {
-  const { weatherData, errorMsg } = props;
+  const { weatherData, errorMsg, units } = props;
   const { location, sky, temperature, humidity, pressure } = weatherData;
 
   if (errorMsg) {
@@ -58,7 +85,10 @@ function WeatherReport(props) {
           Sky:<span>{sky}</span>
         </li>
         <li>
-          Temperature:<span>{temperature} ºC</span>
+          Temperature:
+          <span>
+            {temperature} {units === 'metric' ? 'ºC' : 'ºF'}
+          </span>
         </li>
         <li>
           Humidity:<span>{humidity} %</span>
@@ -79,16 +109,18 @@ WeatherReport.propTypes = {
     pressure: PropTypes.number,
   }).isRequired,
   errorMsg: PropTypes.string.isRequired,
+  units: PropTypes.string.isRequired,
 };
 
 function WeatherApp() {
   const [location, setLocation] = useState('');
+  const [units, setUnits] = useState('metric');
   const [weatherData, setWeatherData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const response = await getCurrentWeather(location);
+    const response = await getCurrentWeather(location, units);
     if (!response.ok) {
       if (response.status === 404) {
         setErrorMsg('The provided location could not be found');
@@ -100,7 +132,7 @@ function WeatherApp() {
       setWeatherData({
         location: data.name,
         sky: data.weather[0].description,
-        temperature: data.main.temp,
+        temperature: Math.round(data.main.temp),
         humidity: data.main.humidity,
         pressure: data.main.pressure,
       });
@@ -109,14 +141,35 @@ function WeatherApp() {
 
   function handleValueChange(event) {
     const { target } = event;
-    setLocation(target.value);
+    if (target.name === 'location') {
+      setLocation(target.value);
+    } else {
+      setUnits(target.value);
+      const newWeatherData = { ...weatherData };
+      if (target.value === 'metric') {
+        newWeatherData.temperature = Math.round(
+          (newWeatherData.temperature - 32) / 1.8
+        );
+        setWeatherData(newWeatherData);
+      } else {
+        newWeatherData.temperature = Math.round(
+          newWeatherData.temperature * 1.8 + 32
+        );
+        setWeatherData(newWeatherData);
+      }
+    }
   }
 
   return (
     <div className="weather-app">
-      <WeatherReport weatherData={weatherData} errorMsg={errorMsg} />
+      <WeatherReport
+        weatherData={weatherData}
+        errorMsg={errorMsg}
+        units={units}
+      />
       <SearchForm
         location={location}
+        units={units}
         handleSubmit={handleSubmit}
         handleValueChange={handleValueChange}
       />

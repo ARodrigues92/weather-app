@@ -25,23 +25,23 @@
 }
 
 .form {
-  width: 30%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.label {
+.input-group {
   display: flex;
-  width: 70%;
 }
 
-.input {
-  flex-grow: 1;
+.location-input {
   margin-left: 5px;
+}
+
+.temperature-input {
+  display: flex;
 }
 
 .submit {
   margin-top: 1vh;
-  width: auto;
 }

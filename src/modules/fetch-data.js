@@ -3,8 +3,8 @@
 
 import key from './api-key';
 
-const getCurrentWeather = async (location) => {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${key}`;
+const getCurrentWeather = async (location, units) => {
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=${units}&appid=${key}`;
 
   try {
     const response = await fetch(url, {
